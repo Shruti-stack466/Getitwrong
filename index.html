@@ -3,138 +3,249 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
-  <title>Watch It Get It Wrong | Swift AI Academy</title>
+  <meta name="color-scheme" content="dark">
+  <title>Watch It Get It Wrong — Swift AI Academy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to activity</a>
-<header class="topbar"><div class="shell"><div class="brand"><span class="brand-mark" aria-hidden="true">S</span>Swift AI Academy</div><div class="topbar-side">60 MIN&nbsp; | &nbsp;PRACTICAL LAB</div></div></header>
-<main id="main">
-  <section class="page hero-page" data-page="start" aria-labelledby="start-heading"><div class="shell">
-    <div class="hero-grid">
-      <div class="hero-copy">
-        <h1 id="start-heading" tabindex="-1">Watch It Get It Wrong</h1>
-        <p class="hero-lead">Give an institution-approved AI tool a facilitator-approved question, capture what it says, check the answer, then rewrite your request and see what changes.</p>
-        <div class="nav"><button type="button" class="btn primary hero-start" data-go="instructions">Start Activity <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button></div>
-      </div>
-      <aside class="journey" aria-label="Activity steps">
-        <h2>What you’ll do</h2>
-        <ol>
-          <li><span class="step-number">1</span><span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 11.5c0 4.4-3.8 7.5-8.5 7.5-1.1 0-2.2-.2-3.2-.6L3 20l1.8-4.4A7.1 7.1 0 0 1 3 11.5C3 7.3 6.8 4 11.5 4S20 7.3 20 11.5Z"/></svg></span><span class="step-copy"><strong>Ask</strong><span>Ask the approved question.</span></span></li>
-          <li><span class="step-number">2</span><span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 2h9l4 4v16H6zM15 2v5h4M9 12h7m-7 4h7"/></svg></span><span class="step-copy"><strong>Capture</strong><span>Save the answer.</span></span></li>
-          <li><span class="step-number">3</span><span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="7"/><path d="m16 16 5 5"/></svg></span><span class="step-copy"><strong>Check</strong><span>Check against the source.</span></span></li>
-          <li><span class="step-number">4</span><span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m4 17 12-12 3 3L7 20l-4 1 1-4ZM14 7l3 3M11 21h10"/></svg></span><span class="step-copy"><strong>Rewrite</strong><span>Improve the request.</span></span></li>
-          <li><span class="step-number">5</span><span class="step-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20v-5h4v5zM10 20V9h4v11zM16 20V4h4v16z"/></svg></span><span class="step-copy"><strong>Compare</strong><span>Compare the results.</span></span></li>
-        </ol>
-      </aside>
+
+<!-- ===== Start screen (cover) ===== -->
+<section class="cover" data-page="start" aria-labelledby="start-heading">
+  <span class="cover-ghost" aria-hidden="true">W</span>
+  <div class="cover-inner">
+    <div class="cover-brand"><img src="assets/logo-mark.webp" alt="" aria-hidden="true"><span>SWIFT&nbsp;AI&nbsp;ACADEMY</span></div>
+    <p class="cover-eyebrow">Practical lab · 60 min</p>
+    <h1 id="start-heading" tabindex="-1">Watch It Get It Wrong</h1>
+    <p class="cover-tagline">Ask an approved AI tool a question, check its answer against a trusted source, then rewrite your request and see what changes.</p>
+    <ol class="cover-steps" aria-label="Activity steps">
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5c0 4.4-3.8 7.5-8.5 7.5-1.1 0-2.2-.2-3.2-.6L3 20l1.8-4.4A7.1 7.1 0 0 1 3 11.5C3 7.3 6.8 4 11.5 4S20 7.3 20 11.5Z"/></svg>Ask</li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l4 4v16H6zM15 2v5h4M9 12h7m-7 4h7"/></svg>Capture</li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7"/><path d="m16 16 5 5"/></svg>Check</li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 17 12-12 3 3L7 20l-4 1 1-4ZM14 7l3 3"/></svg>Rewrite</li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-5h4v5zM10 20V9h4v11zM16 20V4h4v16z"/></svg>Compare</li>
+    </ol>
+    <button type="button" class="btn-start" id="start">Start <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+    <p class="cover-meta">By the end, you can spot an unsupported AI claim and improve a prompt using a trusted source.<br><span>AAI-E-MC1-S01-LAB02 · PC 1.1 to 1.5</span></p>
+  </div>
+</section>
+
+<div class="app">
+  <header class="saa-header">
+    <div class="saa-brand"><img src="assets/logo-mark.webp" alt="" aria-hidden="true"><span class="wordmark"><b>Swift AI</b><small>ACADEMY</small></span></div>
+    <div class="saa-title"><span class="saa-title-eyebrow" id="section-eyebrow">Practical lab</span><span class="saa-title-name">Watch It Get It Wrong</span></div>
+    <div class="saa-header-actions">
+      <button type="button" class="hctl" id="sound-toggle" aria-pressed="true" aria-label="Sound effects on">
+        <svg class="ico-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+        <svg class="ico-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5Z"/><path d="m16 9 6 6m0-6-6 6"/></svg>
+      </button>
     </div>
-    <div class="outcome"><span class="outcome-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="13" r="8"/><circle cx="11" cy="13" r="4"/><path d="m11 13 9-9m-4 0h4v4"/></svg></span><span class="outcome-copy"><strong>By the end of this activity</strong><span>Identify an unsupported AI claim and improve a prompt using a trusted source.</span></span></div>
-  </div></section>
+  </header>
 
-  <section class="page" data-page="instructions" aria-labelledby="instructions-heading" hidden>
-    <div class="shell"><div class="page-inner">
-      <div class="page-count">01 / 05</div>
-      <h2 id="instructions-heading" tabindex="-1">Short Instructions</h2>
-      <div class="panel instruction-box">
-        <h3>What Help Is Allowed</h3>
-        <p>Use only the institution-approved AI tool and permitted account. Write your own revised prompt, check and conclusion. Do not use another learner’s analysis as yours.</p>
-        <h3>Keep the Task Moving</h3>
-        <p>On a shared device, take turns and sign out after your attempts. With low bandwidth, record text instead of a screenshot. If access fails, use a facilitator-approved printed or pre-captured response.</p>
-        <h3>Use Fictional Data Only</h3>
-        <p>Do not enter passwords, Aadhaar numbers, contact details, health information, marks or confidential records. Tell the facilitator if real private information appears.</p>
-      </div>
-      <div class="check acknowledgment"><input type="checkbox" id="instructions-read"><label for="instructions-read">I have read and understood all the instructions above.</label></div>
-      <div class="nav"><button type="button" class="btn" data-go="start">Back</button><button type="button" class="btn primary" data-go="ask">Next <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
-      <p class="status" id="instructions-status" role="status" aria-live="polite"></p>
-    </div></div>
-  </section>
+  <main id="main" class="slides">
 
-  <section class="page" data-page="ask" aria-labelledby="ask-heading" hidden>
-    <div class="shell"><div class="page-inner">
-      <div class="page-count">02 / 05</div>
-      <h2 id="ask-heading" tabindex="-1">Ask and Capture</h2>
-      <p class="intro">Enter the provided prompt in the approved AI tool. Record the AI’s first response here.</p>
-      <aside class="panel prompt-card" aria-label="Facilitator-provided prompt">
-        <div class="card-tag">Provided prompt · <span id="scenario-id"></span></div>
-        <p id="scenario-prompt"></p>
-      </aside>
-      <div class="note" id="scenario-safety" hidden><strong>For this wiring scenario</strong><p>This activity checks an AI-generated materials list. It is not an instruction for live wiring. Follow the qualified instructor’s approved materials and safety procedures during any practical work.</p></div>
-      <div class="fields">
-        <div class="field"><label for="assigned-prompt">Prompt you entered</label><p class="hint">Copy the provided prompt above into the approved AI tool, then record what you entered.</p><textarea id="assigned-prompt" placeholder="Paste the prompt you used."></textarea></div>
-        <div class="field"><label for="first-output">First AI Answer</label><p class="hint">Enter the AI response you received after using the provided prompt.</p><textarea id="first-output" class="tall" placeholder="Paste or transcribe the response."></textarea></div>
-        <div class="field"><label for="capture-method">How did you capture the output?</label><p class="hint">Tell us how you recorded the AI response—for example, by copying the text, adding a screenshot, or writing a transcript.</p><input id="capture-method" type="text" placeholder="Describe how you recorded it."></div>
-      </div>
-      <div class="nav"><button type="button" class="btn" data-go="instructions">Back</button><button type="button" class="btn primary" data-go="check">Next <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
-      <p class="status" id="ask-status" role="status" aria-live="polite"></p>
-    </div></div>
-  </section>
-
-  <section class="page check-page" data-page="check" aria-labelledby="check-heading" hidden>
-    <div class="shell"><div class="page-inner">
-      <div class="page-count">03 / 05</div>
-      <h2 id="check-heading" tabindex="-1">Check Before Use</h2>
-      <p class="intro">Compare the AI answer with the check card. Mark any claim the source does not support. Do not send, post, order, schedule, or act on the AI answer.</p>
-      <div class="check-layout">
-        <aside class="panel check-card" aria-label="Check card" tabindex="0">
-          <div class="card-tag">Check Card · <span id="check-scenario-id"></span></div>
-          <div id="scenario-check"></div>
-        </aside>
-        <div class="fields">
-          <div class="field"><label for="check-source">What source or check card did you use?</label><textarea id="check-source" placeholder="State what you used to check the answer."></textarea></div>
-          <div class="field"><label for="unsupported">Which part of the AI answer is unsupported or wrong?</label><textarea id="unsupported" placeholder="Quote the claim, or describe what the tool could not establish."></textarea></div>
-          <div class="field"><label for="consequence">What could happen if someone used the first answer without checking?</label><textarea id="consequence" placeholder="Name one realistic consequence for this task."></textarea></div>
+    <!-- ===== 1. Instructions ===== -->
+    <section class="page" data-page="instructions" data-step="1" data-kicker="Step 1 · Before you start" aria-labelledby="instructions-heading" hidden>
+      <div class="card"><div class="split">
+        <div class="lead">
+          <p class="kicker">Step 1 · Before you start</p>
+          <h2 id="instructions-heading" tabindex="-1">Know the rules before you open the AI tool.</h2>
+          <p>These three rules keep the lab fair and safe. They apply to every attempt you make today.</p>
+          <p class="do"><b>Your task.</b> Read each rule, then tick the box to confirm.</p>
+          <p class="status" id="instructions-status" role="status" aria-live="polite"></p>
         </div>
-      </div>
-      <div class="check acknowledgment" id="no-claim-row" hidden><input type="checkbox" id="no-claim"><label for="no-claim">My AI did not make an unsupported claim. It may have asked me to insert missing details instead.</label></div>
-      <div class="nav"><button type="button" class="btn" data-go="ask">Back</button><button type="button" class="btn primary" data-go="rewrite">Next <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
-      <p class="status" id="check-status" role="status" aria-live="polite"></p>
-    </div></div>
-  </section>
-
-  <section class="page provided-page" data-page="provided" aria-labelledby="provided-heading" hidden>
-    <div class="shell"><div class="page-inner">
-      <div class="page-count">Additional check</div>
-      <h2 id="provided-heading" tabindex="-1">Your AI did not make an unsupported claim</h2>
-      <p class="intro">Another learner used the same prompt and received the AI response below. Check this response against the check card.</p>
-      <div class="provided-layout">
-        <aside class="panel check-card" aria-label="Check card for the provided AI response" tabindex="0">
-          <div class="card-tag">Check Card · <span id="provided-scenario-id"></span></div>
-          <div id="provided-check"></div>
-        </aside>
-        <div class="fields provided-questions">
-          <div class="field"><label for="provided-check-source">What source or check card did you use?</label><textarea id="provided-check-source" placeholder="State what you used to check the answer."></textarea></div>
-          <div class="field"><label for="provided-unsupported">Which part of the AI answer is unsupported or wrong?</label><textarea id="provided-unsupported" placeholder="Quote the unsupported or wrong claim."></textarea></div>
-          <div class="field"><label for="provided-consequence">What could happen if someone used the first answer without checking?</label><textarea id="provided-consequence" placeholder="Name one realistic consequence for this task."></textarea></div>
-        </div>
-        <aside class="provided-output-column" aria-label="Facilitator-provided AI response">
-          <div class="panel provided-response" tabindex="0" role="region" aria-label="Provided AI output; scroll to read the full response"><div class="card-tag">Provided AI output</div><p id="provided-output"></p></div>
-          <div class="field provided-entry" id="provided-entry-wrap" hidden>
-            <label for="provided-entry">Response supplied by your facilitator</label>
-            <p class="hint">The example output for this prompt has not yet been added to the page. Paste the response your facilitator gives you.</p>
-            <textarea id="provided-entry" class="tall" placeholder="Paste the provided AI response exactly as supplied."></textarea>
+        <div class="work">
+          <div class="rules">
+            <div class="rule"><span class="rule-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 2 8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4Z"/><path d="m9 12 2 2 4-4"/></svg></span><div><h3>What help is allowed</h3><p>Use only the institution-approved AI tool and permitted account. Write your own revised prompt, check and conclusion. Do not use another learner’s analysis as yours.</p></div></div>
+            <div class="rule"><span class="rule-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span><div><h3>Keep the task moving</h3><p>On a shared device, take turns and sign out after your attempts. With low bandwidth, record text instead of a screenshot. If access fails, use a facilitator-approved printed or pre-captured response.</p></div></div>
+            <div class="rule"><span class="rule-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span><div><h3>Use fictional data only</h3><p>Do not enter passwords, Aadhaar numbers, contact details, health information, marks or confidential records. Tell the facilitator if real private information appears.</p></div></div>
           </div>
-        </aside>
-      </div>
-      <div class="nav"><button type="button" class="btn" data-go="check">Back</button><button type="button" class="btn primary" data-go="rewrite">Next <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div>
-      <p class="status" id="provided-status" role="status" aria-live="polite"></p>
-    </div></div>
-  </section>
+          <label class="tick" for="instructions-read" data-required><input type="checkbox" id="instructions-read"><span class="tick-box" aria-hidden="true"></span><span>I have read and understood all the instructions above.</span></label>
+        </div>
+      </div></div>
+    </section>
 
-  <section class="page" data-page="rewrite" aria-labelledby="rewrite-heading" hidden><div class="shell"><div class="page-inner"><div class="page-count">04 / 05</div><h2 id="rewrite-heading" tabindex="-1">Rewrite and Compare</h2><p class="intro" id="rewrite-intro">Write a complete revised prompt. Add any relevant facts from the provided check card that the first answer missed. Tell the tool to say when information is missing and to avoid inventing details. Run the revised prompt in the same approved AI tool and capture the second answer.</p><div class="fields"><div class="field"><label for="revised-prompt">Your Revised Prompt</label><textarea id="revised-prompt" class="tall" placeholder="Write the full prompt you entered on the second attempt."></textarea></div><div class="field"><label for="second-output">Second AI Answer exactly as shown</label><textarea id="second-output" class="tall" placeholder="Paste or transcribe the relevant answer."></textarea></div><div class="field"><fieldset><legend>Answer Review: Did the answer improve?</legend><div class="choice"><label><input type="radio" name="improved" value="Yes">Yes</label><label><input type="radio" name="improved" value="Partly">Partly</label><label><input type="radio" name="improved" value="No">No</label><label><input type="radio" name="improved" value="Cannot tell">Cannot tell</label></div></fieldset></div><div class="field"><label for="comparison">What Changed? What still needs checking?</label><textarea id="comparison" placeholder="Compare the two answers. State whether you would use the second answer and why."></textarea></div></div><div class="nav"><button type="button" class="btn" data-go="check">Back</button><button type="button" class="btn primary" data-go="review">Next <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div><p class="status" id="rewrite-status" role="status" aria-live="polite"></p></div></div></section>
+    <!-- ===== 2. Ask and capture ===== -->
+    <section class="page" data-page="ask" data-step="2" data-kicker="Step 2 · Ask and capture" aria-labelledby="ask-heading" hidden>
+      <div class="card"><div class="split">
+        <div class="lead">
+          <p class="kicker">Step 2 · Ask and capture</p>
+          <h2 id="ask-heading" tabindex="-1">Ask the AI tool, then save exactly what it says.</h2>
+          <div class="info prompt-card" aria-label="Facilitator-provided prompt">
+            <span class="pill">Provided prompt · <span id="scenario-id"></span></span>
+            <p id="scenario-prompt"></p>
+            <button type="button" class="link-btn" id="copy-prompt"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg><span>Copy prompt</span></button>
+          </div>
+          <div class="warn-note" id="scenario-safety" hidden><strong>For this wiring scenario.</strong> This activity checks an AI-generated materials list. It is not an instruction for live wiring. Follow the qualified instructor’s approved materials and safety procedures during any practical work.</div>
+          <p class="do"><b>Your task.</b> Enter the prompt in the approved AI tool. Record the first answer here.</p>
+          <p class="status" id="ask-status" role="status" aria-live="polite"></p>
+        </div>
+        <div class="work">
+          <div class="fields">
+            <div class="field" data-required><label for="assigned-prompt">Prompt you entered</label><p class="hint">Copy the provided prompt into the approved AI tool, then record what you entered.</p><textarea id="assigned-prompt" placeholder="Paste the prompt you used."></textarea></div>
+            <div class="field" data-required><label for="first-output">First AI answer</label><p class="hint">Enter the AI response you received after using the provided prompt.</p><textarea id="first-output" class="tall" placeholder="Paste or transcribe the response."></textarea></div>
+            <div class="field" data-required><label for="capture-method">How did you capture the output?</label><p class="hint">For example: copied the text, took a screenshot, or wrote a transcript.</p><input id="capture-method" type="text" placeholder="Describe how you recorded it."></div>
+          </div>
+        </div>
+      </div></div>
+    </section>
 
-  <section class="page" data-page="review" aria-labelledby="review-heading" hidden><div class="shell"><div class="page-inner"><div class="page-count">05 / 05</div><h2 id="review-heading" tabindex="-1">Reviewer Evidence</h2><p class="intro">Check your records before submission.</p><div class="panel review-card"><h3>Evidence checklist</h3><div class="checklist"><div class="check"><input type="checkbox" id="c1"><label for="c1">I used the approved AI tool and a permitted account.</label></div><div class="check"><input type="checkbox" id="c2"><label for="c2">My prompt and both AI responses are recorded.</label></div><div class="check"><input type="checkbox" id="c3"><label for="c3">I named the source or check card, an unsupported claim or missing fact, and a possible consequence.</label></div><div class="check"><input type="checkbox" id="c4"><label for="c4">I revised the prompt, compared the answers, and explained what still needs checking.</label></div><div class="check"><input type="checkbox" id="c5"><label for="c5">My record contains no private or confidential data.</label></div><div class="check" id="c6-row" hidden><input type="checkbox" id="c6"><label for="c6">I recorded the provided AI output and checked its unsupported claim and possible consequence against the check card.</label></div></div></div><div class="fields"><div class="field"><label for="learner-reflection">One sentence to remember next time</label><textarea id="learner-reflection" placeholder="Before I use an AI answer, I will…"></textarea></div></div><div class="panel review-card"><h3>Submit your record</h3><p>Download your PDF report, then submit it using the method your facilitator specifies. This page does not send or store what you enter.</p><div class="submit-actions"><button type="button" class="btn primary" id="download">Download PDF report <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 17v3h14v-3"/></svg></button></div><p class="status" id="download-status" role="status" aria-live="polite"></p></div><div class="panel review-card" id="logout-panel" hidden><h3>Log out</h3><p>After saving the PDF, sign out of the approved AI tool in its own tab. This activity has no account. Select Log out here to clear your entries from this page.</p><button type="button" class="btn" id="logout">Log out and clear this activity</button></div><div class="nav"><button type="button" class="btn" data-go="rewrite">Back</button></div></div></div></section>
-</main>
-<footer class="footer"><div class="shell"><span>Swift AI Academy · Watch It Get It Wrong</span><span class="mono">AAI-E-MC1-S01-LAB02 · PC 1.1 to 1.5</span></div></footer>
+    <!-- ===== 3. Check ===== -->
+    <section class="page wide" data-page="check" data-step="3" data-kicker="Step 3 · Check before use" aria-labelledby="check-heading" hidden>
+      <div class="card"><div class="stack">
+        <div class="lead lead-row">
+          <div>
+            <p class="kicker">Step 3 · Check before use</p>
+            <h2 id="check-heading" tabindex="-1">Check the AI answer against the source.</h2>
+            <p>Mark any claim the check card does not support. Do not send, post, order, schedule or act on the AI answer.</p>
+          </div>
+          <div>
+            <p class="do"><b>Your task.</b> Compare the first answer with the check card, then answer all three questions.</p>
+            <p class="status" id="check-status" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="check-layout">
+          <aside class="info check-card scroll" aria-label="Check card" tabindex="0">
+            <span class="pill">Check card · <span id="check-scenario-id"></span></span>
+            <div id="scenario-check"></div>
+          </aside>
+          <div class="work">
+            <div class="fields">
+              <div class="field" data-required><label for="check-source">What source or check card did you use?</label><textarea id="check-source" placeholder="State what you used to check the answer."></textarea></div>
+              <div class="field" data-required><label for="unsupported">Which part of the AI answer is unsupported or wrong?</label><textarea id="unsupported" placeholder="Quote the claim, or describe what the tool could not establish."></textarea></div>
+              <div class="field" data-required><label for="consequence">What could happen if someone used the first answer without checking?</label><textarea id="consequence" placeholder="Name one realistic consequence for this task."></textarea></div>
+              <label class="tick" for="no-claim" id="no-claim-row" hidden><input type="checkbox" id="no-claim"><span class="tick-box" aria-hidden="true"></span><span>My AI did not make an unsupported claim. It may have asked me to insert missing details instead.</span></label>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ===== 3b. Provided output (branch) ===== -->
+    <section class="page wide" data-page="provided" data-step="3" data-kicker="Step 3 · Additional check" aria-labelledby="provided-heading" hidden>
+      <div class="card"><div class="stack">
+        <div class="lead lead-row">
+          <div>
+            <p class="kicker">Step 3 · Additional check</p>
+            <h2 id="provided-heading" tabindex="-1">Your AI didn’t slip up. Check this one instead.</h2>
+            <p>Another learner used the same prompt and got the response below.</p>
+          </div>
+          <div>
+            <p class="do"><b>Your task.</b> Read the provided output, check it against the card, then answer all three questions.</p>
+            <p class="status" id="provided-status" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+        <div class="provided-layout">
+          <aside class="info check-card scroll" aria-label="Check card for the provided AI response" tabindex="0">
+            <span class="pill">Check card · <span id="provided-scenario-id"></span></span>
+            <div id="provided-check"></div>
+          </aside>
+          <div class="provided-output-column">
+            <div class="paper provided-response scroll" tabindex="0" role="region" aria-label="Provided AI output; scroll to read the full response"><span class="pill">Provided AI output</span><p id="provided-output"></p></div>
+            <div class="field provided-entry" id="provided-entry-wrap" hidden>
+              <label for="provided-entry">Response supplied by your facilitator</label>
+              <p class="hint">The example output for this prompt has not been added to the page yet. Paste the response your facilitator gives you.</p>
+              <textarea id="provided-entry" class="tall" placeholder="Paste the provided AI response exactly as supplied."></textarea>
+            </div>
+          </div>
+          <div class="work provided-questions">
+            <div class="fields">
+              <div class="field" data-required><label for="provided-check-source">What source or check card did you use?</label><textarea id="provided-check-source" placeholder="State what you used to check the answer."></textarea></div>
+              <div class="field" data-required><label for="provided-unsupported">Which part of the AI answer is unsupported or wrong?</label><textarea id="provided-unsupported" placeholder="Quote the unsupported or wrong claim."></textarea></div>
+              <div class="field" data-required><label for="provided-consequence">What could happen if someone used this answer without checking?</label><textarea id="provided-consequence" placeholder="Name one realistic consequence for this task."></textarea></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ===== 4. Rewrite ===== -->
+    <section class="page" data-page="rewrite" data-step="4" data-kicker="Step 4 · Rewrite and compare" aria-labelledby="rewrite-heading" hidden>
+      <div class="card"><div class="split">
+        <div class="lead">
+          <p class="kicker">Step 4 · Rewrite and compare</p>
+          <h2 id="rewrite-heading" tabindex="-1">A better prompt gets a better answer. Test it.</h2>
+          <p id="rewrite-intro">Write a complete revised prompt. Add any relevant facts from the provided check card that the first answer missed. Tell the tool to say when information is missing and to avoid inventing details. Run the revised prompt in the same approved AI tool and capture the second answer.</p>
+          <p class="do"><b>Your task.</b> Run your revised prompt, record the second answer, and compare.</p>
+          <p class="status" id="rewrite-status" role="status" aria-live="polite"></p>
+        </div>
+        <div class="work">
+          <div class="fields">
+            <div class="field" data-required><label for="revised-prompt">Your revised prompt</label><textarea id="revised-prompt" class="tall" placeholder="Write the full prompt you entered on the second attempt."></textarea></div>
+            <div class="field" data-required><label for="second-output">Second AI answer, exactly as shown</label><textarea id="second-output" class="tall" placeholder="Paste or transcribe the relevant answer."></textarea></div>
+            <div class="field" data-required data-group="improved">
+              <fieldset><legend>Did the answer improve?</legend>
+                <div class="choices" role="radiogroup" aria-label="Did the answer improve?">
+                  <label class="choice"><input type="radio" name="improved" value="Yes"><span>Yes</span></label>
+                  <label class="choice"><input type="radio" name="improved" value="Partly"><span>Partly</span></label>
+                  <label class="choice"><input type="radio" name="improved" value="No"><span>No</span></label>
+                  <label class="choice"><input type="radio" name="improved" value="Cannot tell"><span>Cannot tell</span></label>
+                </div>
+              </fieldset>
+            </div>
+            <div class="field" data-required><label for="comparison">What changed? What still needs checking?</label><textarea id="comparison" placeholder="Compare the two answers. Say whether you would use the second answer and why."></textarea></div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+
+    <!-- ===== 5. Review ===== -->
+    <section class="page" data-page="review" data-step="5" data-kicker="Step 5 · Reviewer evidence" aria-labelledby="review-heading" hidden>
+      <div class="card"><div class="split">
+        <div class="lead">
+          <p class="kicker">Step 5 · Reviewer evidence</p>
+          <h2 id="review-heading" tabindex="-1">Check your record, then download it.</h2>
+          <p>This page does not send or store what you enter. Download the PDF and submit it the way your facilitator asks.</p>
+          <p class="do"><b>Your task.</b> Tick what is true, write one line to remember, then download your report.</p>
+          <div class="submit-block">
+            <button type="button" class="btn-primary" id="download">Download PDF report <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 17v3h14v-3"/></svg></button>
+            <p class="status" id="download-status" role="status" aria-live="polite"></p>
+          </div>
+          <div class="info logout-panel" id="logout-panel" hidden>
+            <span class="info-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></span>
+            <div><h3>Log out</h3><p>After saving the PDF, sign out of the approved AI tool in its own tab. Then clear your entries from this page.</p><button type="button" class="btn-tonal" id="logout">Log out and clear this activity</button></div>
+          </div>
+        </div>
+        <div class="work">
+          <h3 class="work-title">Evidence checklist</h3>
+          <div class="checklist">
+            <label class="tick" for="c1"><input type="checkbox" id="c1"><span class="tick-box" aria-hidden="true"></span><span>I used the approved AI tool and a permitted account.</span></label>
+            <label class="tick" for="c2"><input type="checkbox" id="c2"><span class="tick-box" aria-hidden="true"></span><span>My prompt and both AI responses are recorded.</span></label>
+            <label class="tick" for="c3"><input type="checkbox" id="c3"><span class="tick-box" aria-hidden="true"></span><span>I named the source or check card, an unsupported claim or missing fact, and a possible consequence.</span></label>
+            <label class="tick" for="c4"><input type="checkbox" id="c4"><span class="tick-box" aria-hidden="true"></span><span>I revised the prompt, compared the answers, and explained what still needs checking.</span></label>
+            <label class="tick" for="c5"><input type="checkbox" id="c5"><span class="tick-box" aria-hidden="true"></span><span>My record contains no private or confidential data.</span></label>
+            <label class="tick" for="c6" id="c6-row" hidden><input type="checkbox" id="c6"><span class="tick-box" aria-hidden="true"></span><span>I recorded the provided AI output and checked its unsupported claim and possible consequence against the check card.</span></label>
+          </div>
+          <div class="fields">
+            <div class="field"><label for="learner-reflection">One sentence to remember next time</label><textarea id="learner-reflection" placeholder="Before I use an AI answer, I will…"></textarea></div>
+          </div>
+        </div>
+      </div></div>
+    </section>
+  </main>
+
+  <footer class="slide-footer">
+    <button type="button" class="btn-secondary nav-btn" id="nav-back">Back</button>
+    <div class="saa-prog" aria-hidden="true"><span class="saa-prog-bar"><span class="saa-prog-fill" id="prog-fill"></span></span><span class="saa-prog-n" id="prog-n">1 / 5</span></div>
+    <button type="button" class="btn-primary nav-btn" id="nav-next">Next</button>
+  </footer>
+</div>
+
+<!-- ===== Confirm modal ===== -->
+<div class="overlay" id="confirm-modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <h3 id="confirm-title">Clear this activity?</h3>
+    <p>Have you saved and checked the PDF and signed out of the approved AI tool? This clears every entry on this page.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="confirm-cancel">Keep my entries</button>
+      <button type="button" class="btn-primary" id="confirm-ok">Clear and log out</button>
+    </div>
+  </div>
+</div>
+
 <script src="script.js" defer></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-

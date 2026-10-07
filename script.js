@@ -258,13 +258,48 @@ Issued By:
     });
     target.append(heading, groups);
   }
+  const app = document.querySelector('.app');
+  const cover = document.querySelector('.cover');
+  const backBtn = byId('nav-back');
+  const nextBtn = byId('nav-next');
+  const steps = {instructions:1, ask:2, check:3, provided:3, rewrite:4, review:5};
+  const totalSteps = 5;
+  const activePage = () => document.querySelector('.page[data-page="' + current + '"]');
+  const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function openCover() {
+    cover.hidden = false;
+    cover.classList.remove('is-leaving');
+    cover.classList.add('is-entering');
+    app.inert = true;
+    byId('start-heading').focus({preventScroll:true});
+  }
+  function closeCover() {
+    cover.classList.remove('is-entering');
+    cover.classList.add('is-leaving');
+    app.inert = false;
+    setTimeout(() => { if (current !== 'start') cover.hidden = true; cover.classList.remove('is-leaving'); }, reducedMotion() ? 0 : 500);
+  }
   const show = name => {
     if (!pages.includes(name)) return;
-    document.querySelectorAll('[data-page]').forEach(page => { page.hidden = page.dataset.page !== name; });
+    const previous = current;
     current = name;
-    window.scrollTo(0, 0);
-    const heading = document.querySelector('[data-page="' + name + '"] h1, [data-page="' + name + '"] h2');
-    if (heading) heading.focus();
+    clearNudges();
+    if (name === 'start') { openCover(); return; }
+    if (previous === 'start') closeCover();
+    document.querySelectorAll('.page[data-page]').forEach(page => { page.hidden = page.dataset.page !== name; });
+    const page = activePage();
+    document.querySelector('.slides').scrollTop = 0;
+    page.querySelectorAll('.lead, .work, .scroll, .check-layout > *, .provided-layout > *').forEach(area => { area.scrollTop = 0; });
+    const step = steps[name];
+    byId('prog-fill').style.width = (step / totalSteps * 100) + '%';
+    byId('prog-n').textContent = step + ' / ' + totalSteps;
+    nextBtn.hidden = name === 'review';
+    updateLock();
+    fit();
+    const heading = page.querySelector('h2');
+    if (heading) heading.focus({preventScroll:true});
+    resetIdle();
   };
   const assignScenario = () => {
     const assignedId = new URLSearchParams(window.location.search).get('scenario');
@@ -310,66 +345,185 @@ Issued By:
     if (!relevant) byId('no-claim').checked = false;
   }
   byId('unsupported').addEventListener('input', updateNoClaimOption);
-  const requireText = (ids, statusId) => {
-    const missing = ids.map(byId).find(field => !field.value.trim());
-    if (!missing) { byId(statusId).textContent = ''; return true; }
-    byId(statusId).textContent = 'Complete all required answers before continuing.';
-    missing.focus();
-    return false;
+  /* ---------- sound (Web Audio, no files) ---------- */
+  const sound = (() => {
+    let ctx = null, on = true, lastTap = 0, lastCue = 0;
+    try { on = localStorage.getItem('wigw-sound') !== 'off'; } catch (error) {}
+    const audio = () => {
+      if (!ctx) { const Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return null; ctx = new Ctx(); }
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    };
+    const tone = (freq, start, length, gain, type, endFreq, filter) => {
+      const c = audio(); if (!c) return;
+      const t = c.currentTime + start;
+      const osc = c.createOscillator(), amp = c.createGain();
+      osc.type = type; osc.frequency.setValueAtTime(freq, t);
+      if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, t + length * .75);
+      amp.gain.setValueAtTime(0.0001, t);
+      amp.gain.exponentialRampToValueAtTime(gain, t + 0.008);
+      amp.gain.exponentialRampToValueAtTime(0.0001, t + length);
+      let node = osc;
+      if (filter) { const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = filter; osc.connect(lp); node = lp; }
+      node.connect(amp); amp.connect(c.destination);
+      osc.start(t); osc.stop(t + length + 0.02);
+    };
+    const cueAllowed = () => { const now = performance.now(); if (!on || now - lastTap > 1500 || now - lastCue < 350) return false; lastCue = now; return true; };
+    return {
+      get on() { return on; },
+      set on(value) { on = value; try { localStorage.setItem('wigw-sound', value ? 'on' : 'off'); } catch (error) {} },
+      tap() { lastTap = performance.now(); if (on) tone(1250, 0, 0.06, 0.055, 'sine', 620); },
+      correct() { if (!cueAllowed()) return; tone(880, 0, 0.32, 0.11, 'sine'); tone(1760, 0, 0.25, 0.02, 'sine'); tone(1318.5, 0.09, 0.42, 0.11, 'sine'); tone(2637, 0.09, 0.3, 0.02, 'sine'); },
+      wrong() { if (!cueAllowed()) return; tone(329.6, 0, 0.26, 0.1, 'triangle', null, 1400); tone(261.6, 0.12, 0.34, 0.1, 'triangle', null, 1100); }
+    };
+  })();
+  const soundToggle = byId('sound-toggle');
+  const paintSound = () => {
+    soundToggle.setAttribute('aria-pressed', String(sound.on));
+    soundToggle.setAttribute('aria-label', sound.on ? 'Sound effects on' : 'Sound effects off');
   };
-  document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => {
-    if (current === 'instructions' && button.dataset.go === 'ask') {
-      if (!byId('instructions-read').checked) {
-        byId('instructions-status').textContent = 'Read the instructions and tick the checkbox before continuing.';
-        byId('instructions-read').focus();
-        return;
-      }
-      byId('instructions-status').textContent = '';
-    }
-    if (current === 'ask' && button.dataset.go === 'check') {
-      if (!requireText(['assigned-prompt','first-output','capture-method'], 'ask-status')) return;
-    }
-    if (current === 'check' && button.dataset.go === 'rewrite') {
-      if (!requireText(['check-source','unsupported','consequence'], 'check-status')) return;
-      const noClaim = looksLikeNoClaim(byId('unsupported').value);
-      if (noClaim && !byId('no-claim').checked) {
-        byId('check-status').textContent = 'Confirm your no-claim answer with the checkbox before continuing.';
-        byId('no-claim').focus();
-        return;
-      }
-      byId('check-status').textContent = '';
-      usedProvided = noClaim;
-      updateBranchUI();
-      if (usedProvided) { show('provided'); return; }
-    }
-    if (current === 'provided' && button.dataset.go === 'rewrite') {
-      if (!scenario.providedOutput && !byId('provided-entry').value.trim()) {
-        byId('provided-status').textContent = 'Ask the facilitator for the provided AI response, then paste it here to continue.';
-        byId('provided-entry').focus();
-        return;
-      }
-      if (!requireText(['provided-check-source','provided-unsupported','provided-consequence'], 'provided-status')) return;
-      byId('provided-status').textContent = '';
-      usedProvided = true;
-      updateBranchUI();
-    }
-    if (current === 'rewrite' && button.dataset.go === 'review') {
-      if (!requireText(['revised-prompt','second-output','comparison'], 'rewrite-status')) return;
-      const answerReview = document.querySelector('input[name="improved"]:checked');
-      if (!answerReview) {
-        byId('rewrite-status').textContent = 'Select whether the second answer improved before continuing.';
-        document.querySelector('input[name="improved"]').focus();
-        return;
-      }
-      byId('rewrite-status').textContent = '';
-    }
-    if (current === 'rewrite' && button.dataset.go === 'check' && usedProvided) {
-      show('provided');
+  soundToggle.addEventListener('click', () => { sound.on = !sound.on; paintSound(); });
+  paintSound();
+  document.addEventListener('pointerdown', event => {
+    if (event.target.closest('button, .tick, .choice, summary') && !event.target.closest('#sound-toggle')) sound.tap();
+  }, true);
+
+  /* ---------- required activity, locked Next ---------- */
+  const required = {
+    instructions: () => [byId('instructions-read')],
+    ask: () => ['assigned-prompt','first-output','capture-method'].map(byId),
+    check: () => {
+      const list = ['check-source','unsupported','consequence'].map(byId);
+      if (looksLikeNoClaim(byId('unsupported').value)) list.push(byId('no-claim'));
+      return list;
+    },
+    provided: () => (scenario && scenario.providedOutput ? [] : [byId('provided-entry')]).concat(['provided-check-source','provided-unsupported','provided-consequence'].map(byId)),
+    rewrite: () => [byId('revised-prompt'), byId('second-output'), document.querySelector('input[name="improved"]'), byId('comparison')],
+    review: () => []
+  };
+  const isFilled = field => {
+    if (field.type === 'checkbox') return field.checked;
+    if (field.type === 'radio') return Boolean(document.querySelector('input[name="' + field.name + '"]:checked'));
+    return Boolean(field.value.trim());
+  };
+  const missingFor = page => (required[page] ? required[page]() : []).filter(field => !isFilled(field));
+  const messageFor = field => {
+    if (field.id === 'instructions-read') return 'Read the instructions and tick the checkbox before continuing.';
+    if (field.id === 'no-claim') return 'Confirm your no-claim answer with the checkbox before continuing.';
+    if (field.id === 'provided-entry') return 'Ask the facilitator for the provided AI response, then paste it here to continue.';
+    if (field.type === 'radio' && current === 'rewrite' && missingFor('rewrite').length === 1) return 'Select whether the second answer improved before continuing.';
+    return 'Complete all required answers before continuing.';
+  };
+  const glowTarget = field => field.type === 'checkbox' ? field.closest('.tick') : field.type === 'radio' ? field.closest('.choices') : field;
+  function updateLock() {
+    if (current === 'start') return;
+    activePage().querySelectorAll('.field[data-required]').forEach(field => {
+      const control = field.querySelector('textarea, input[type=text]');
+      if (control) field.classList.toggle('is-done', Boolean(control.value.trim()));
+    });
+    const locked = missingFor(current).length > 0;
+    nextBtn.classList.toggle('saa-locked', locked);
+    nextBtn.setAttribute('aria-disabled', String(locked));
+    const status = byId(current + '-status');
+    if (!locked && status) status.textContent = '';
+  }
+  document.addEventListener('input', updateLock);
+  document.addEventListener('change', updateLock);
+
+  /* ---------- nudges ---------- */
+  let nudged = [];
+  let idleTimer = 0;
+  function clearNudges() { nudged.forEach(element => element.classList.remove('saa-nudge')); nudged = []; }
+  function nudge(elements, duration) {
+    clearNudges();
+    nudged = elements.filter(Boolean).slice(0, 8);
+    nudged.forEach(element => element.classList.add('saa-nudge'));
+    if (duration) { const these = nudged; setTimeout(() => these.forEach(element => element.classList.remove('saa-nudge')), duration); }
+  }
+  function resetIdle() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      if (document.hidden || !byId('confirm-modal').hidden) return resetIdle();
+      if (current === 'start') { nudge([byId('start')]); return; }
+      if (current === 'review') return;
+      const missing = missingFor(current);
+      nudge(missing.length ? [...new Set(missing.map(glowTarget))] : [nextBtn]);
+    }, 5000);
+  }
+  ['pointerdown','keydown','wheel','input','touchstart'].forEach(type => document.addEventListener(type, () => {
+    if (nudged.length && !nudged.some(element => element.dataset.hold)) clearNudges();
+    resetIdle();
+  }, {passive:true, capture:true}));
+
+  /* ---------- navigation ---------- */
+  function goNext() {
+    const missing = missingFor(current);
+    if (missing.length) {
+      const status = byId(current + '-status');
+      if (status) status.textContent = messageFor(missing[0]);
+      sound.wrong();
+      const card = activePage().querySelector('.card');
+      card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+      setTimeout(() => card.classList.remove('shake'), 400);
+      nudge([...new Set(missing.map(glowTarget))], 2600);
+      missing[0].focus();
       return;
     }
-    if (button.dataset.go === 'instructions' && !scenario) assignScenario();
-    show(button.dataset.go);
-  }));
+    if (current === 'instructions') show('ask');
+    else if (current === 'ask') show('check');
+    else if (current === 'check') {
+      usedProvided = looksLikeNoClaim(byId('unsupported').value);
+      updateBranchUI();
+      show(usedProvided ? 'provided' : 'rewrite');
+    } else if (current === 'provided') {
+      usedProvided = true;
+      updateBranchUI();
+      show('rewrite');
+    } else if (current === 'rewrite') show('review');
+  }
+  function goBack() {
+    const previous = {instructions:'start', ask:'instructions', check:'ask', provided:'check', rewrite: usedProvided ? 'provided' : 'check', review:'rewrite'};
+    show(previous[current]);
+  }
+  nextBtn.addEventListener('click', goNext);
+  backBtn.addEventListener('click', goBack);
+  byId('start').addEventListener('click', () => {
+    if (!scenario) assignScenario();
+    show('instructions');
+  });
+
+  byId('copy-prompt').addEventListener('click', async () => {
+    const label = byId('copy-prompt').querySelector('span');
+    try {
+      await navigator.clipboard.writeText(scenario.prompt);
+      label.textContent = 'Copied';
+    } catch (error) {
+      const range = document.createRange();
+      range.selectNodeContents(byId('scenario-prompt'));
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      label.textContent = 'Selected — press Ctrl+C';
+    }
+    setTimeout(() => { label.textContent = 'Copy prompt'; }, 2000);
+  });
+
+  /* ---------- proportional zoom ---------- */
+  function fit() {
+    const width = window.innerWidth, height = window.innerHeight;
+    let zoom = width <= 700 ? 1 : Math.max(1, Math.min(width / 980, height / 640, 1.7));
+    const root = document.documentElement;
+    root.style.setProperty('--z', zoom.toFixed(3));
+    if (zoom === 1 || current === 'start') return;
+    const page = activePage();
+    const overflowing = () => [...page.querySelectorAll('.card, .split > .lead')].some(area => area.scrollHeight > area.clientHeight + 1);
+    while (zoom > 1 && overflowing()) {
+      zoom = Math.max(1, zoom - 0.04);
+      root.style.setProperty('--z', zoom.toFixed(3));
+    }
+  }
+  let fitFrame = 0;
+  window.addEventListener('resize', () => { cancelAnimationFrame(fitFrame); fitFrame = requestAnimationFrame(fit); });
   const fields = [
     ['Prompt entered','assigned-prompt'],['First AI answer','first-output'],
     ['Capture method','capture-method'],['Check source or card','check-source'],
@@ -465,14 +619,39 @@ Issued By:
       link.click();
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 10000);
+      byId('download-status').classList.add('ok');
       byId('download-status').textContent = 'PDF download started. Open the file to check it before submission.';
       byId('logout-panel').hidden = false;
+      sound.correct();
     } catch (error) {
+      byId('download-status').classList.remove('ok');
       byId('download-status').textContent = 'The PDF could not be created. Keep this page open and try again.';
+      sound.wrong();
     }
   });
+
+  /* ---------- confirm modal ---------- */
+  const modal = byId('confirm-modal');
+  const closeModal = () => { modal.hidden = true; app.inert = false; byId('logout').focus(); };
   byId('logout').addEventListener('click', () => {
-    if (!window.confirm('Have you saved and checked the PDF and signed out of the approved AI tool? This will clear the entries on this page.')) return;
+    modal.hidden = false;
+    app.inert = true;
+    byId('confirm-cancel').focus();
+  });
+  byId('confirm-cancel').addEventListener('click', closeModal);
+  modal.addEventListener('click', event => { if (event.target === modal) closeModal(); });
+  modal.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { closeModal(); return; }
+    if (event.key !== 'Tab') return;
+    const first = byId('confirm-cancel'), last = byId('confirm-ok');
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  });
+  byId('confirm-ok').addEventListener('click', () => {
+    modal.hidden = true;
+    clearActivity();
+  });
+  function clearActivity() {
     fields.forEach(item => { byId(item[1]).value = ''; });
     ['provided-entry','provided-check-source','provided-unsupported','provided-consequence'].forEach(id => { byId(id).value = ''; });
     document.querySelectorAll('input[name="improved"], .checklist input').forEach(input => { input.checked = false; });
@@ -495,6 +674,13 @@ Issued By:
     byId('scenario-safety').hidden = true;
     byId('logout-panel').hidden = true;
     byId('download-status').textContent = '';
+    byId('download-status').classList.remove('ok');
+    document.querySelectorAll('.field.is-done').forEach(field => field.classList.remove('is-done'));
     show('start');
-  });
+  }
+
+  /* ---------- init ---------- */
+  app.inert = true;
+  fit();
+  resetIdle();
 })();
