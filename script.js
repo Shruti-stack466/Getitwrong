@@ -1,11 +1,14 @@
 (() => {
-  const pages = ['start','instructions','ask','check','provided','rewrite','review'];
+  const pages = ['start','setup','ask','check','provided','revise','compare','review'];
   let current = 'start';
+  let maxStep = 0;
   let scenario = null;
+  /* stream toggle: each stream draws its scenario from its own pool */
+  const lanePools = {iti:['case-1','case-4'], he:['case-2','case-3']};
+  let lane = 'iti';
+  try { if (localStorage.getItem('wigw-lane') === 'he') lane = 'he'; } catch (error) {}
   let previousScenarioId = null;
   let usedProvided = false;
-  const defaultRewrite = 'Write a complete revised prompt. Add any relevant facts from the provided check card that the first answer missed. Tell the tool to say when information is missing and to avoid inventing details. Run the revised prompt in the same approved AI tool and capture the second answer.';
-  const providedRewrite = 'Write a complete revised prompt based on the faults you found in the provided AI output. Add any relevant facts from the check card that the provided answer missed. Tell the tool to say when information is missing and to avoid inventing details. Run the revised prompt in the same approved AI tool and capture the second answer.';
   const scenarios = [
     {
         "id": "case-1",
@@ -65,14 +68,14 @@
     {
         "id": "case-2",
         "prompt": "Write a notice for a workshop being conducted by the Mechanical Engineering Department during the second half of the upcoming weekend.",
-        "check": "Workshop: Role of mechanical engineering in driving sustainability.\nDate and time: Sunday 11 October, 3 pm.\nVenue: Online mode.\nEligibility: Open to all.",
+        "check": "Workshop: Role of mechanical engineering in driving sustainability.\nDate and time: {{C2_SUN_CARD}}, 3 pm.\nVenue: Online mode.\nEligibility: Open to all.",
         "providedOutput": `[Name of Institution / College]
 
 NOTICE
 
-Date: September 24, 2026
+Date: {{TODAY}}
 
-Ref No: ME/WS/2026/09-02
+Ref No: ME/WS/{{YEAR}}/{{MM}}-02
 
 SUBJECT: HANDS-ON WORKSHOP ON ADVANCED MANUFACTURING TECHNIQUES
 
@@ -83,7 +86,7 @@ The session aims to provide practical exposure and live demonstrations on modern
 Workshop Schedule & Details
 
 - Topic: Advanced Fabrication & Hands-on Machining Workshop
-- Date: Saturday, September 26, 2026
+- Date: {{C2_SAT}}
 - Time: 02:00 PM to 05:00 PM (Second Half)
 - Venue: Central Mechanical Workshop / Seminar Hall B
 - Target Audience: Open to all Mechanical Engineering students (Priority for 2nd & 3rd-year students)
@@ -98,7 +101,7 @@ Important Instructions
 
 - Attendance will be marked at the beginning of the second-half session (02:00 PM sharp).
 - All participants must strictly adhere to workshop safety rules (wear lab coats and closed-toe shoes).
-- Interested students must register via the department portal by Friday, September 25, 2026, before 05:00 PM.
+- Interested students must register via the department portal by {{C2_FRI}}, before 05:00 PM.
 
 For any queries or registration assistance, contact student coordinators [Student Name / Mobile No.] or the undersigned.
 
@@ -113,15 +116,15 @@ Head of Department, Mechanical Engineering
     {
         "id": "case-3",
         "prompt": "Write a report for the placement drive conducted recently on campus.",
-        "check": "Annual Campus Placement Drive — Check Card\n\nSubmitted to: Placement Coordinator, JKS College.\nPlacement Drive Period: 1 September to 10 September 2026.\n\nParticipation and Placement Results:\nMore than 18 companies participated.\nParticipating companies represented the IT, consulting, finance, education/EdTech, and core engineering sectors.\nRegistered candidates: 520.\nStudents who secured offers: 400.\nOverall placement rate: 76.9%.\nTotal offers issued: 425.\n\nSalary Package:\nHighest package: ₹18 LPA.\nAverage package: ₹7 LPA.\nLowest package: ₹4 LPA.\n\nSector-wise Recruitment Breakdown:\nIT firms: 40%.\nConsulting firms: 25%.\nEdTech firms: 10%.\nCore engineering firms: 25%.",
-        "providedOutput": `REPORT ON ANNUAL CAMPUS PLACEMENT DRIVE 2026
+        "check": "Annual Campus Placement Drive — Check Card\n\nSubmitted to: Placement Coordinator, JKS College.\nPlacement Drive Period: {{C3_CARD_PERIOD}}.\n\nParticipation and Placement Results:\nMore than 18 companies participated.\nParticipating companies represented the IT, consulting, finance, education/EdTech, and core engineering sectors.\nRegistered candidates: 520.\nStudents who secured offers: 400.\nOverall placement rate: 76.9%.\nTotal offers issued: 425.\n\nSalary Package:\nHighest package: ₹18 LPA.\nAverage package: ₹7 LPA.\nLowest package: ₹4 LPA.\n\nSector-wise Recruitment Breakdown:\nIT firms: 40%.\nConsulting firms: 25%.\nEdTech firms: 10%.\nCore engineering firms: 25%.",
+        "providedOutput": `REPORT ON ANNUAL CAMPUS PLACEMENT DRIVE {{YEAR}}
 Submitted To: Office of the Dean / Head of Department
 Submitted By: Training and Placement Cell (TPC)
-Date of Submission: September 24, 2026
+Date of Submission: {{TODAY}}
 
 1. Executive Summary
 
-The Training and Placement Cell organized the annual Campus Placement Drive for the graduating batch of 2026 from September 15 to September 22, 2026. Over 25 leading companies across core engineering, IT, consulting, and finance sectors participated. Out of 450 eligible candidates registered for the drive, 380 students secured job offers, achieving an overall placement rate of 84.4%.
+The Training and Placement Cell organized the annual Campus Placement Drive for the graduating batch of {{YEAR}} from {{C3_OUT_PERIOD}}. Over 25 leading companies across core engineering, IT, consulting, and finance sectors participated. Out of 450 eligible candidates registered for the drive, 380 students secured job offers, achieving an overall placement rate of 84.4%.
 
 2. Objectives
 
@@ -172,44 +175,48 @@ Training & Placement Cell`
     },
     {
         "id": "case-4",
-        "prompt": "The lab project must be submitted by Friday, 16 October 2026, the third Friday of the month. The presentation will be on Monday, 19 October 2026. Everyone is requested to bring their project report and other necessary items. Prepare a notice stating the submission deadline, presentation time and place, eligible candidates, and what they should bring.",
-        "check": "Project submission: Friday, 16 October 2026 (the third Friday of the month). Presentation: Monday, 19 October 2026. Everyone must bring their projects and prepare their presentations.",
+        "prompt": "The lab project has to be submitted by Friday in the upcoming week, and the presentation will be held about a week later. Everyone should bring their project report and other necessary items.\n\nPrepare a notice mentioning the submission deadline, presentation time and place, and the things students need to bring.",
+        "check": "Lab Project Notice — Check Card\n☐ Submission deadline: Friday of the upcoming week\n☐ Presentation date: Saturday of the following week\n☐ Presentation time: After 12 noon\n☐ Presentation place: Lab\n☐ Eligible students: Second-year students\n☐ Students should bring: Project report",
         "providedOutput": `NOTICE
-Date: September 24, 2026
-To: All Eligible Students / Course Participants
-Subject: Lab Project Submission and Presentation Guidelines
 
-This is to notify all eligible students regarding the final submission and presentation schedule for the Laboratory Project.
+Date: {{TODAY}}
 
-1. Eligibility
+Subject: Submission of Lab Project Report and Presentation Schedule
 
-- Eligible Candidates: All students currently enrolled in the course who have completed the required lab sessions and continuous assessment submissions.
+This is to inform all students that the final submission deadline for the Lab Project Report and the schedule for the upcoming Project Presentation have been fixed as per the details below:
 
-2. Lab Project Submission Deadline
+1. Project Report Submission
+Deadline: {{C4_DUE}}
 
-- Date: Friday, September 25, 2026
-- Time: By 5:00 PM (or end of class hours)
-- Details: Final project deliverables and initial draft copies must be ready and submitted by this date.
+Time: By 4:00 PM
 
-3. Presentation Details
+Submission Place: Department Laboratory / Lab Instructor's Office
 
-- Date: Friday, October 2, 2026
-- Time: Immediately following the regular class session
-- Venue / Place: Main Project Laboratory (Lab 302) / Designated Seminar Room
+2. Presentation Details
+Date: {{C4_PRES}}
 
-4. Required Items to Bring
+Time: 10:00 AM onwards
 
-All eligible candidates must come fully prepared and bring the following:
-- Lab Project Model / Code Base: Working hardware model, simulation files, or software repository executable.
-- Project Report: Printed and bound lab report formatted as per the guidelines.
-- Presentation Media: Presentation slides (on a USB drive or cloud backup).
-- Supporting Requirements: Lab record books, log sheets, and any supplementary testing tools/accessories required for the live demonstration.
+Venue: Seminar Hall / Main Lab Room
 
-Note: Strict adherence to the deadlines is mandatory. Late submissions or failure to present without prior written permission will impact final evaluation scores.
+3. Items Required for the Presentation Day
+All students must bring the following items without fail:
+
+Printed copy of the finalized Project Report (hard copy)
+
+Presentation slides loaded on a USB drive (or accessible via cloud backup)
+
+Working prototype/hardware demonstration kit (if applicable)
+
+Lab manual/logbook and student ID card
+
+Note: Strict adherence to the submission deadline is mandatory. Late submissions will lead to deduction in evaluation marks.
 
 Issued By:
-[Your Name / Designation]
-[Department Name / Institution]`
+
+[Your Name / Title]
+
+[Department / Institution Name]`
     }
 ];
   const byId = id => document.getElementById(id);
@@ -262,8 +269,25 @@ Issued By:
   const cover = document.querySelector('.cover');
   const backBtn = byId('nav-back');
   const nextBtn = byId('nav-next');
-  const steps = {instructions:1, ask:2, check:3, provided:3, rewrite:4, review:5};
-  const totalSteps = 5;
+  const steps = {setup:1, ask:2, check:3, provided:3, revise:4, compare:5, review:6};
+  const stepPage = {1:'setup', 2:'ask', 3:'check', 4:'revise', 5:'compare', 6:'review'};
+  const stepNames = ['Set up your tool','Ask and capture','Check with the check card','Revise the prompt','Compare the outputs','Save your evidence'];
+  const totalSteps = 6;
+  const checkIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  function paintRail() {
+    const step = steps[current] || 0;
+    document.querySelectorAll('#rail li').forEach((item, index) => {
+      const n = index + 1, button = item.querySelector('button');
+      item.classList.toggle('cur', n === step);
+      item.classList.toggle('done', n < step || (n <= maxStep && n !== step && n < maxStep));
+      button.disabled = n > maxStep;
+      if (n === step) button.setAttribute('aria-current', 'step'); else button.removeAttribute('aria-current');
+      button.querySelector('.n').innerHTML = item.classList.contains('done') ? checkIcon : String(n);
+    });
+    byId('mbar-n').textContent = 'Step ' + step + ' of ' + totalSteps;
+    byId('mbar-name').textContent = stepNames[step - 1] || '';
+    byId('mbar-fill').style.width = (step / totalSteps * 100) + '%';
+  }
   const activePage = () => document.querySelector('.page[data-page="' + current + '"]');
   const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -285,32 +309,66 @@ Issued By:
     const previous = current;
     current = name;
     clearNudges();
+    narration.stop();
     if (name === 'start') { openCover(); return; }
     if (previous === 'start') closeCover();
     document.querySelectorAll('.page[data-page]').forEach(page => { page.hidden = page.dataset.page !== name; });
     const page = activePage();
     document.querySelector('.slides').scrollTop = 0;
-    page.querySelectorAll('.lead, .work, .scroll, .check-layout > *, .provided-layout > *').forEach(area => { area.scrollTop = 0; });
-    const step = steps[name];
-    byId('prog-fill').style.width = (step / totalSteps * 100) + '%';
-    byId('prog-n').textContent = step + ' / ' + totalSteps;
+    page.querySelectorAll('.lead, .work, .scroll, .check-layout > *, .tri-layout > *, .setup-layout > *').forEach(area => { area.scrollTop = 0; });
+    maxStep = Math.max(maxStep, steps[name]);
+    if (name === 'compare') {
+      byId('compare-first').textContent = byId('first-output').value;
+      byId('compare-second').textContent = byId('second-output').value;
+    }
+    if (name === 'setup') paintSetup();
+    paintRail();
     nextBtn.hidden = name === 'review';
     updateLock();
     fit();
     const heading = page.querySelector('h2');
     if (heading) heading.focus({preventScroll:true});
     resetIdle();
+    narration.auto();
   };
+  /* scenario dates are worked out from the day the lab runs, so the planted errors stay the same in every session */
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const addDays = (date, n) => { const d = new Date(date); d.setDate(d.getDate() + n); return d; };
+  const us = d => MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();          /* October 7, 2026 */
+  const usDay = d => DAYS[d.getDay()] + ', ' + us(d);                                          /* Friday, October 16, 2026 */
+  const dm = d => d.getDate() + ' ' + MONTHS[d.getMonth()];                                    /* 11 October */
+  function dateTokens(today) {
+    const dow = today.getDay();
+    const saturday = addDays(today, ((6 - dow + 7) % 7) || 7);       /* the upcoming weekend */
+    const nextMonday = addDays(today, ((8 - dow) % 7) || 7);         /* start of the upcoming week */
+    const due = addDays(nextMonday, 4);                               /* Friday of the upcoming week */
+    const cardStart = addDays(today, -23), cardEnd = addDays(today, -14);
+    const outStart = addDays(today, -9), outEnd = addDays(today, -2);
+    return {
+      TODAY: us(today), YEAR: String(today.getFullYear()), MM: String(today.getMonth() + 1).padStart(2, '0'),
+      C2_SUN_CARD: DAYS[0] + ' ' + dm(addDays(saturday, 1)),          /* card: Sunday, second half */
+      C2_SAT: usDay(saturday),                                        /* output: wrong day (Saturday) */
+      C2_FRI: usDay(addDays(saturday, -1)),
+      C3_CARD_PERIOD: dm(cardStart) + (cardStart.getFullYear() !== cardEnd.getFullYear() ? ' ' + cardStart.getFullYear() : '') + ' to ' + dm(cardEnd) + ' ' + cardEnd.getFullYear(),
+      C3_OUT_PERIOD: MONTHS[outStart.getMonth()] + ' ' + outStart.getDate() + ' to ' + us(outEnd),
+      C4_DUE: usDay(due),                                             /* matches the card */
+      C4_PRES: usDay(addDays(due, 7))                                 /* wrong: card says Saturday of the following week */
+    };
+  }
+  function withDates(item) {
+    const tokens = dateTokens(new Date());
+    const fill = text => typeof text === 'string' ? text.replace(/\{\{([A-Z0-9_]+)\}\}/g, (match, key) => tokens[key] || match) : text;
+    return Object.assign({}, item, {prompt: fill(item.prompt), check: fill(item.check), providedOutput: fill(item.providedOutput)});
+  }
   const assignScenario = () => {
     const assignedId = new URLSearchParams(window.location.search).get('scenario');
-    const available = scenarios.filter(item => item.id !== previousScenarioId);
-    scenario = scenarios.find(item => item.id === assignedId) || available[Math.floor(Math.random() * available.length)];
-    byId('scenario-id').textContent = scenario.id.toUpperCase();
-    byId('check-scenario-id').textContent = scenario.id.toUpperCase();
+    const pool = scenarios.filter(item => lanePools[lane].includes(item.id));
+    const available = pool.filter(item => item.id !== previousScenarioId);
+    scenario = withDates(scenarios.find(item => item.id === assignedId) || available[Math.floor(Math.random() * available.length)] || pool[0]);
     byId('scenario-prompt').textContent = scenario.prompt;
     renderCheckCard(byId('scenario-check'), scenario);
     byId('scenario-safety').hidden = scenario.id !== 'case-1';
-    byId('provided-scenario-id').textContent = scenario.id.toUpperCase();
     renderCheckCard(byId('provided-check'), scenario);
     byId('provided-output').textContent = scenario.providedOutput || 'The facilitator-provided AI output for this prompt has not been added yet.';
     byId('provided-entry-wrap').hidden = Boolean(scenario.providedOutput);
@@ -335,7 +393,6 @@ Issued By:
     ].some(pattern => pattern.test(words));
   };
   function updateBranchUI() {
-    byId('rewrite-intro').textContent = usedProvided ? providedRewrite : defaultRewrite;
     byId('c6-row').hidden = !usedProvided;
     if (!usedProvided) byId('c6').checked = false;
   }
@@ -382,7 +439,55 @@ Issued By:
     soundToggle.setAttribute('aria-pressed', String(sound.on));
     soundToggle.setAttribute('aria-label', sound.on ? 'Sound effects on' : 'Sound effects off');
   };
-  soundToggle.addEventListener('click', () => { sound.on = !sound.on; paintSound(); });
+  soundToggle.addEventListener('click', () => { sound.on = !sound.on; paintSound(); if (!sound.on) narration.stop(); });
+
+  /* ---------- narration: Replay reads the screen's left text (browser speech, no files) ---------- */
+  const narration = (() => {
+    const synth = window.speechSynthesis;
+    const button = byId('replay-btn'), label = byId('replay-lbl');
+    let voice = null, speaking = false, autoTimer = 0;
+    const pickVoice = () => {
+      const voices = synth ? synth.getVoices() : [];
+      voice = voices.find(v => /en-IN/i.test(v.lang)) || voices.find(v => /^en-GB/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang)) || null;
+    };
+    if (!synth) { button.hidden = true; return {stop() {}, auto() {}}; }
+    pickVoice();
+    synth.addEventListener && synth.addEventListener('voiceschanged', pickVoice);
+    const paint = () => {
+      button.classList.toggle('playing', speaking);
+      label.textContent = speaking ? 'Pause' : 'Replay';
+      button.setAttribute('aria-label', speaking ? 'Pause narration' : 'Play narration');
+    };
+    const text = () => {
+      const page = document.querySelector('.page[data-page="' + current + '"]');
+      if (!page) return '';
+      return [...page.querySelectorAll('.lead')].map(lead => {
+        const copy = lead.cloneNode(true);
+        copy.querySelectorAll('.kicker, .status, .pill, button, [hidden], [aria-hidden="true"]').forEach(node => node.remove());
+        return [...copy.querySelectorAll('h2, p, .warn-note')].map(node => node.textContent.trim()).filter(Boolean).join('. ');
+      }).join('. ').replace(/\.\s*\./g, '.').replace(/\s+/g, ' ');
+    };
+    const stop = () => { clearTimeout(autoTimer); if (speaking || synth.speaking) synth.cancel(); speaking = false; paint(); };
+    const play = () => {
+      stop();
+      const words = text();
+      if (!words) return;
+      const utterance = new SpeechSynthesisUtterance(words);
+      if (voice) utterance.voice = voice;
+      utterance.lang = voice ? voice.lang : 'en-IN';
+      utterance.rate = 0.95;
+      utterance.onend = utterance.onerror = () => { speaking = false; paint(); };
+      speaking = true;
+      paint();
+      synth.speak(utterance);
+    };
+    button.addEventListener('click', () => { if (speaking) stop(); else play(); });
+    return {
+      stop,
+      /* new screen: read it after the slide settles, only while sound is on */
+      auto() { clearTimeout(autoTimer); if (sound.on) autoTimer = setTimeout(play, 450); }
+    };
+  })();
   paintSound();
   document.addEventListener('pointerdown', event => {
     if (event.target.closest('button, .tick, .choice, summary') && !event.target.closest('#sound-toggle')) sound.tap();
@@ -390,7 +495,7 @@ Issued By:
 
   /* ---------- required activity, locked Next ---------- */
   const required = {
-    instructions: () => [byId('instructions-read')],
+    setup: () => ['setup-0','setup-1','setup-2','setup-3'].map(byId),
     ask: () => ['assigned-prompt','first-output','capture-method'].map(byId),
     check: () => {
       const list = ['check-source','unsupported','consequence'].map(byId);
@@ -398,8 +503,9 @@ Issued By:
       return list;
     },
     provided: () => (scenario && scenario.providedOutput ? [] : [byId('provided-entry')]).concat(['provided-check-source','provided-unsupported','provided-consequence'].map(byId)),
-    rewrite: () => [byId('revised-prompt'), byId('second-output'), document.querySelector('input[name="improved"]'), byId('comparison')],
-    review: () => []
+    revise: () => [byId('revised-prompt'), byId('second-output')],
+    compare: () => [document.querySelector('input[name="improved"]'), byId('comparison')],
+    review: () => [...document.querySelectorAll('.checklist .tick:not([hidden]) input')].concat(byId('learner-reflection'))
   };
   const isFilled = field => {
     if (field.type === 'checkbox') return field.checked;
@@ -408,13 +514,34 @@ Issued By:
   };
   const missingFor = page => (required[page] ? required[page]() : []).filter(field => !isFilled(field));
   const messageFor = field => {
-    if (field.id === 'instructions-read') return 'Read the instructions and tick the checkbox before continuing.';
+    if (current === 'review') return 'Tick every checklist box and write your sentence before you download.';
+    if (/^setup-/.test(field.id)) return 'Tick each setup step when you finish it.';
     if (field.id === 'no-claim') return 'Confirm your no-claim answer with the checkbox before continuing.';
     if (field.id === 'provided-entry') return 'Ask the facilitator for the provided AI response, then paste it here to continue.';
-    if (field.type === 'radio' && current === 'rewrite' && missingFor('rewrite').length === 1) return 'Select whether the second answer improved before continuing.';
+    if (field.type === 'radio' && missingFor('compare').length === 1) return 'Select whether the second answer improved before continuing.';
     return 'Complete all required answers before continuing.';
   };
   const glowTarget = field => field.type === 'checkbox' ? field.closest('.tick') : field.type === 'radio' ? field.closest('.choices') : field;
+
+  /* ---------- setup: ticks drive the example screen ---------- */
+  const setupAlt = [
+    "Example screen: the institute's approved list, with an Open tool button for the approved assistant.",
+    'Example screen: signing in to the approved assistant with a name and a hidden password.',
+    'Example screen: a language menu.',
+    'Example screen: the learner sends Hello and the assistant replies.'
+  ];
+  function paintSetup() {
+    const ticks = [0,1,2,3].map(i => byId('setup-' + i).checked);
+    const now = ticks.indexOf(false) < 0 ? 3 : ticks.indexOf(false);
+    document.querySelectorAll('.setup-tick').forEach((row, i) => row.classList.toggle('is-now', i === now));
+    const mock = byId('setup-mock'), src = 'assets/mock-setup-0' + (now + 1) + '.webp';
+    if (mock.getAttribute('src') !== src) {
+      mock.setAttribute('src', src);
+      mock.alt = setupAlt[now];
+      mock.style.animation = 'none'; void mock.offsetWidth; mock.style.animation = '';
+    }
+  }
+  document.querySelectorAll('.setup-tick input').forEach(input => input.addEventListener('change', paintSetup));
   function updateLock() {
     if (current === 'start') return;
     activePage().querySelectorAll('.field[data-required]').forEach(field => {
@@ -422,10 +549,26 @@ Issued By:
       if (control) field.classList.toggle('is-done', Boolean(control.value.trim()));
     });
     const locked = missingFor(current).length > 0;
-    nextBtn.classList.toggle('saa-locked', locked);
-    nextBtn.setAttribute('aria-disabled', String(locked));
-    const status = byId(current + '-status');
-    if (!locked && status) status.textContent = '';
+    /* on the last screen the lock sits on Download instead of Next */
+    const gate = current === 'review' ? byId('download') : nextBtn;
+    gate.classList.toggle('saa-locked', locked);
+    gate.setAttribute('aria-disabled', String(locked));
+    const status = statusFor(current);
+    if (!locked && status.dataset.gate === 'missing') { status.textContent = ''; delete status.dataset.gate; }
+  }
+  /* one shared message line in the footer; the review screen keeps its own next to Download */
+  const statusFor = page => page === 'review' ? byId('download-status') : byId('nav-status');
+  function refuse(missing) {
+    const status = statusFor(current);
+    status.classList.remove('ok');
+    status.textContent = messageFor(missing[0]);
+    status.dataset.gate = 'missing';
+    sound.wrong();
+    const card = activePage().querySelector('.card');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    setTimeout(() => card.classList.remove('shake'), 400);
+    nudge([...new Set(missing.map(glowTarget))], 2600);
+    (missing[0].type === 'checkbox' || missing[0].type === 'radio' ? glowTarget(missing[0]) : missing[0]).focus({preventScroll:false});
   }
   document.addEventListener('input', updateLock);
   document.addEventListener('change', updateLock);
@@ -443,11 +586,11 @@ Issued By:
   function resetIdle() {
     clearTimeout(idleTimer);
     idleTimer = setTimeout(() => {
-      if (document.hidden || !byId('confirm-modal').hidden) return resetIdle();
+      if (document.hidden || !byId('confirm-modal').hidden || !byId('help-modal').hidden) return resetIdle();
       if (current === 'start') { nudge([byId('start')]); return; }
-      if (current === 'review') return;
       const missing = missingFor(current);
-      nudge(missing.length ? [...new Set(missing.map(glowTarget))] : [nextBtn]);
+      if (current === 'review' && !missing.length && !byId('logout-panel').hidden) return;
+      nudge(missing.length ? [...new Set(missing.map(glowTarget))] : [current === 'review' ? byId('download') : nextBtn]);
     }, 5000);
   }
   ['pointerdown','keydown','wheel','input','touchstart'].forEach(type => document.addEventListener(type, () => {
@@ -458,39 +601,122 @@ Issued By:
   /* ---------- navigation ---------- */
   function goNext() {
     const missing = missingFor(current);
-    if (missing.length) {
-      const status = byId(current + '-status');
-      if (status) status.textContent = messageFor(missing[0]);
-      sound.wrong();
-      const card = activePage().querySelector('.card');
-      card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
-      setTimeout(() => card.classList.remove('shake'), 400);
-      nudge([...new Set(missing.map(glowTarget))], 2600);
-      missing[0].focus();
-      return;
-    }
-    if (current === 'instructions') show('ask');
+    if (missing.length) { refuse(missing); return; }
+    byId('nav-status').textContent = '';
+    if (current === 'setup') show('ask');
     else if (current === 'ask') show('check');
     else if (current === 'check') {
       usedProvided = looksLikeNoClaim(byId('unsupported').value);
       updateBranchUI();
-      show(usedProvided ? 'provided' : 'rewrite');
+      show(usedProvided ? 'provided' : 'revise');
     } else if (current === 'provided') {
       usedProvided = true;
       updateBranchUI();
-      show('rewrite');
-    } else if (current === 'rewrite') show('review');
+      show('revise');
+    } else if (current === 'revise') show('compare');
+    else if (current === 'compare') show('review');
   }
   function goBack() {
-    const previous = {instructions:'start', ask:'instructions', check:'ask', provided:'check', rewrite: usedProvided ? 'provided' : 'check', review:'rewrite'};
+    const previous = {setup:'start', ask:'setup', check:'ask', provided:'check', revise: usedProvided ? 'provided' : 'check', compare:'revise', review:'compare'};
     show(previous[current]);
   }
   nextBtn.addEventListener('click', goNext);
   backBtn.addEventListener('click', goBack);
   byId('start').addEventListener('click', () => {
     if (!scenario) assignScenario();
-    show('instructions');
+    show('setup');
   });
+  /* rail: jump to any step already reached */
+  byId('rail').addEventListener('click', event => {
+    const button = event.target.closest('button[data-step]');
+    if (!button || button.disabled) return;
+    const step = Number(button.dataset.step);
+    show(step === 3 && usedProvided ? 'provided' : stepPage[step]);
+  });
+
+  /* ---------- modals ---------- */
+  function trapFocus(modal) {
+    modal.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { modal.dispatchEvent(new CustomEvent('close')); return; }
+      if (event.key !== 'Tab') return;
+      const items = [...modal.querySelectorAll('button, [href], input, textarea, [tabindex]:not([tabindex="-1"])')].filter(item => !item.hidden && item.offsetParent !== null);
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+    modal.addEventListener('click', event => { if (event.target === modal) modal.dispatchEvent(new CustomEvent('close')); });
+  }
+  let modalReturn = null;
+  function openModal(modal, focusTarget) {
+    narration.stop();
+    modalReturn = document.activeElement;
+    modal.hidden = false;
+    app.inert = true;
+    (focusTarget || modal.querySelector('button')).focus();
+  }
+  function closeModal(modal) {
+    modal.hidden = true;
+    app.inert = current === 'start';
+    if (modalReturn && modalReturn.focus) modalReturn.focus();
+  }
+
+  /* rules and help (Stuck?) */
+  const helpModal = byId('help-modal');
+  trapFocus(helpModal);
+  helpModal.addEventListener('close', () => closeModal(helpModal));
+  helpModal.querySelector('[data-close]').addEventListener('click', () => closeModal(helpModal));
+  let rulesOpened = false;
+  const openHelp = () => { rulesOpened = true; openModal(helpModal); };
+  byId('stuck-btn').addEventListener('click', openHelp);
+  document.querySelectorAll('[data-open-help]').forEach(button => button.addEventListener('click', openHelp));
+
+  /* generic confirm */
+  const confirmModal = byId('confirm-modal');
+  let confirmAction = null;
+  trapFocus(confirmModal);
+  confirmModal.addEventListener('close', () => closeModal(confirmModal));
+  function askConfirm(title, text, okLabel, cancelLabel, action) {
+    byId('confirm-title').textContent = title;
+    byId('confirm-text').textContent = text;
+    byId('confirm-ok').textContent = okLabel;
+    byId('confirm-cancel').textContent = cancelLabel;
+    confirmAction = action;
+    openModal(confirmModal, byId('confirm-cancel'));
+  }
+  byId('confirm-cancel').addEventListener('click', () => closeModal(confirmModal));
+  byId('confirm-ok').addEventListener('click', () => {
+    closeModal(confirmModal);
+    const action = confirmAction;
+    confirmAction = null;
+    if (action) action();
+  });
+
+  /* ---------- stream toggle (ITI / Higher ed) ---------- */
+  const entryIds = ['assigned-prompt','first-output','capture-method','check-source','unsupported','consequence','provided-entry','provided-check-source','provided-unsupported','provided-consequence','revised-prompt','second-output','comparison'];
+  function paintLane() {
+    document.querySelectorAll('#lane-seg button').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.lane === lane)));
+  }
+  function setLane(next) {
+    lane = next;
+    try { localStorage.setItem('wigw-lane', lane); } catch (error) {}
+    paintLane();
+    if (!scenario) return;
+    entryIds.forEach(id => { byId(id).value = ''; });
+    document.querySelectorAll('input[name="improved"]').forEach(input => { input.checked = false; });
+    byId('no-claim').checked = false;
+    byId('no-claim-row').hidden = true;
+    previousScenarioId = null;
+    assignScenario();
+    if (steps[current] > 2) { maxStep = 2; show('ask'); } else { if (current !== 'start') { paintRail(); updateLock(); } }
+  }
+  byId('lane-seg').addEventListener('click', event => {
+    const button = event.target.closest('button[data-lane]');
+    if (!button || button.dataset.lane === lane) return;
+    const typed = entryIds.some(id => byId(id).value.trim());
+    if (!typed) { setLane(button.dataset.lane); return; }
+    askConfirm('Switch your stream?', 'You get a new scenario for ' + (button.dataset.lane === 'iti' ? 'ITI' : 'higher education') + '. The answers you have typed so far will be cleared. Your setup ticks stay.', 'Switch and clear', 'Stay on this one', () => setLane(button.dataset.lane));
+  });
+  paintLane();
 
   byId('copy-prompt').addEventListener('click', async () => {
     const label = byId('copy-prompt').querySelector('span');
@@ -516,7 +742,7 @@ Issued By:
     root.style.setProperty('--z', zoom.toFixed(3));
     if (zoom === 1 || current === 'start') return;
     const page = activePage();
-    const overflowing = () => [...page.querySelectorAll('.card, .split > .lead')].some(area => area.scrollHeight > area.clientHeight + 1);
+    const overflowing = () => [...page.querySelectorAll('.card, .lead, .work, .setup-layout > *')].some(area => area.scrollHeight > area.clientHeight + 1);
     while (zoom > 1 && overflowing()) {
       zoom = Math.max(1, zoom - 0.04);
       root.style.setProperty('--z', zoom.toFixed(3));
@@ -534,7 +760,8 @@ Issued By:
   const value = id => byId(id).value.trim() ? byId(id).value : '[Not entered]';
   function record() {
     const improved = document.querySelector('input[name="improved"]:checked');
-    const lines = ['WATCH IT GET IT WRONG','AAI-E-MC1-S01-LAB02 | PC 1.1 to 1.5','Assigned scenario: ' + (scenario ? scenario.id.toUpperCase() : '[Not selected]'),'Provided prompt: ' + (scenario ? scenario.prompt : '[Not selected]'),'Check card: ' + (scenario ? scenario.check : '[Not selected]'),''];
+    const setupDone = [0,1,2,3].filter(i => byId('setup-' + i).checked).length;
+    const lines = ['WATCH IT GET IT WRONG','AAI-E-MC1-S01-LAB02 | PC 1.1 to 1.5','Stream: ' + (lane === 'iti' ? 'ITI trade' : 'Higher education'),'Tool setup: ' + setupDone + ' of 4 steps done' + (rulesOpened ? ', lab rules opened' : ''),'Assigned scenario: ' + (scenario ? scenario.id.toUpperCase() : '[Not selected]'),'Provided prompt: ' + (scenario ? scenario.prompt : '[Not selected]'),'Check card: ' + (scenario ? scenario.check : '[Not selected]'),''];
     fields.forEach(item => { lines.push(item[0].toUpperCase(), value(item[1]), ''); });
     if (usedProvided) {
       lines.push('PROVIDED AI OUTPUT USED', scenario.providedOutput || value('provided-entry'), '');
@@ -550,6 +777,7 @@ Issued By:
     let result = '';
     for (const character of value) {
       if (character === '\u20b9') { result += 'INR '; continue; }
+      if (character === '\u2610') { result += '[ ]'; continue; }
       const point = character.codePointAt(0);
       const code = punctuation[character] || (point >= 32 && point <= 255 ? point : 63);
       if (code === 40 || code === 41 || code === 92) result += '\\' + String.fromCharCode(code);
@@ -610,6 +838,9 @@ Issued By:
     return new Blob([pdf], {type:'application/pdf'});
   }
   byId('download').addEventListener('click', () => {
+    const missing = missingFor('review');
+    if (missing.length) { refuse(missing); return; }
+    delete byId('download-status').dataset.gate;
     try {
       const url = URL.createObjectURL(makePdf(record()));
       const link = document.createElement('a');
@@ -630,45 +861,25 @@ Issued By:
     }
   });
 
-  /* ---------- confirm modal ---------- */
-  const modal = byId('confirm-modal');
-  const closeModal = () => { modal.hidden = true; app.inert = false; byId('logout').focus(); };
+  /* ---------- log out ---------- */
   byId('logout').addEventListener('click', () => {
-    modal.hidden = false;
-    app.inert = true;
-    byId('confirm-cancel').focus();
-  });
-  byId('confirm-cancel').addEventListener('click', closeModal);
-  modal.addEventListener('click', event => { if (event.target === modal) closeModal(); });
-  modal.addEventListener('keydown', event => {
-    if (event.key === 'Escape') { closeModal(); return; }
-    if (event.key !== 'Tab') return;
-    const first = byId('confirm-cancel'), last = byId('confirm-ok');
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-  });
-  byId('confirm-ok').addEventListener('click', () => {
-    modal.hidden = true;
-    clearActivity();
+    askConfirm('Clear this activity?', 'Have you saved and checked the PDF and signed out of the approved AI tool? This clears every entry on this page.', 'Clear and log out', 'Keep my entries', clearActivity);
   });
   function clearActivity() {
     fields.forEach(item => { byId(item[1]).value = ''; });
     ['provided-entry','provided-check-source','provided-unsupported','provided-consequence'].forEach(id => { byId(id).value = ''; });
-    document.querySelectorAll('input[name="improved"], .checklist input').forEach(input => { input.checked = false; });
+    document.querySelectorAll('input[name="improved"], .checklist input, .setup-tick input').forEach(input => { input.checked = false; });
+    rulesOpened = false;
     byId('no-claim').checked = false;
     byId('no-claim-row').hidden = true;
-    byId('instructions-read').checked = false;
-    byId('instructions-status').textContent = '';
-    byId('ask-status').textContent = '';
-    byId('check-status').textContent = '';
-    byId('provided-status').textContent = '';
-    byId('rewrite-status').textContent = '';
+    byId('nav-status').textContent = '';
+    byId('learner-reflection').value = '';
     previousScenarioId = scenario ? scenario.id : previousScenarioId;
     scenario = null;
     usedProvided = false;
+    maxStep = 0;
     updateBranchUI();
-    byId('scenario-id').textContent = '';
-    byId('check-scenario-id').textContent = '';
+    paintSetup();
     byId('scenario-prompt').textContent = '';
     byId('scenario-check').textContent = '';
     byId('scenario-safety').hidden = true;
